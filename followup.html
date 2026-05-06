@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SVRP Follow-Up Questions — GrowthLock</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --paper: #f8f7f4;
+    --accent: #2c5f7c;
+    --accent-light: #e8f0f5;
+    --border: #d4d0c8;
+    --muted: #7a7568;
+    --success: #3a7d5c;
+    --success-bg: #edf7f1;
+    --section-bg: #ffffff;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+    --radius: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page-header {
+    background: var(--ink);
+    color: #fff;
+    padding: 48px 24px 40px;
+    text-align: center;
+  }
+  .page-header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 400;
+    margin-bottom: 8px;
+  }
+  .page-header .subtitle {
+    color: rgba(255,255,255,0.55);
+    font-size: 0.95rem;
+  }
+  .page-header .logo-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.4);
+  }
+  .page-header .logo-bar span {
+    width: 28px; height: 1px;
+    background: rgba(255,255,255,0.2);
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 20px 120px;
+  }
+  .intro-card {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 36px;
+    font-size: 0.92rem;
+    color: var(--accent);
+    line-height: 1.65;
+  }
+  .question-card {
+    background: var(--section-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    transition: border-color 0.2s;
+  }
+  .question-card:focus-within { border-color: var(--accent); }
+  .question-card.answered {
+    border-left: 3px solid var(--success);
+    background: var(--success-bg);
+  }
+  .question-label {
+    font-size: 0.93rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 12px;
+    display: flex;
+    gap: 8px;
+  }
+  .q-num { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+  .question-card textarea {
+    width: 100%;
+    min-height: 100px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--paper);
+    resize: vertical;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .question-card textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(44,95,124,0.1);
+  }
+  .question-card textarea::placeholder { color: #b0aa9f; }
+  .progress-bar {
+    position: fixed; top: 0; left: 0;
+    height: 3px;
+    background: var(--accent);
+    transition: width 0.3s ease;
+    z-index: 100;
+  }
+  .progress-text {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+  .progress-text strong { color: var(--ink); }
+  .responder-section {
+    background: var(--section-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 36px;
+    box-shadow: var(--shadow);
+  }
+  .responder-section label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .responder-section input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--ink);
+    background: var(--paper);
+    margin-bottom: 14px;
+    transition: border-color 0.2s;
+  }
+  .responder-section input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(44,95,124,0.1);
+  }
+  .actions {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(248,247,244,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    z-index: 50;
+  }
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 12px 28px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--success);
+    color: #fff;
+    padding: 14px 36px;
+    font-size: 0.95rem;
+  }
+  .btn-primary:hover { background: #2e6a4c; }
+  .btn-primary:disabled { background: #b0aa9f; cursor: not-allowed; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: #eee; }
+  .toast {
+    position: fixed;
+    bottom: 80px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 200;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .success-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(26,26,46,0.92);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+  .success-overlay.show { display: flex; }
+  .success-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 48px 40px;
+    text-align: center;
+    max-width: 440px;
+    margin: 20px;
+    animation: popIn 0.35s ease;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .success-icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--success-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 1.8rem;
+  }
+  .success-card h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+  .success-card p {
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+  @media (max-width: 600px) {
+    .container { padding: 20px 16px 120px; }
+    .question-card { padding: 16px 18px; }
+    .actions { padding: 12px 16px; flex-direction: column; }
+    .btn { padding: 12px 20px; font-size: 0.85rem; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<header class="page-header">
+  <div class="logo-bar"><span></span>CONFIDENTIAL<span></span></div>
+  <h1>SVRP Follow-Up Questions</h1>
+  <div class="subtitle">Syndication Velocity Returns Program — GrowthLock, LLC</div>
+</header>
+
+<div class="container">
+  <div class="intro-card">
+    Thanks for the thorough responses on the initial questionnaire — really appreciated the detail and transparency. A few follow-up questions came out of that review. Same format as last time: answers auto-save in your browser, and hit Submit when you're ready.
+  </div>
+
+  <div class="responder-section">
+    <label>Your Name</label>
+    <input type="text" id="responderName" placeholder="Full name" oninput="saveDraft()">
+    <label>Date</label>
+    <input type="text" id="responderDate" placeholder="Auto-filled on submit" readonly style="color: var(--muted);">
+    <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+  </div>
+
+  <div class="progress-text">
+    <strong id="answeredCount">0</strong> of <strong id="totalCount">0</strong> questions answered
+  </div>
+
+  <div id="questionnaire"></div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-secondary" onclick="saveDraft()">Save Draft</button>
+  <button class="btn btn-primary" id="submitBtn" onclick="submitForm()">Submit Responses</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="success-overlay" id="successOverlay">
+  <div class="success-card">
+    <div class="success-icon">✓</div>
+    <h2>Responses Submitted</h2>
+    <p>Your follow-up answers have been sent. Thanks again for the thoroughness — we'll review and be in touch.</p>
+  </div>
+</div>
+
+<script>
+const FORMSPREE_URL = "https://formspree.io/f/mojrwlyv";
+
+const questions = [
+  "Your initial responses describe a second layer of evaluation specific to the velocity model — assessing whether a merchant is a strong candidate for early payoff within 90–120 days. Can you walk me through how that evaluation actually works? Is there a formal framework, a scoring model, a checklist — or is it judgment-based? What specific data points drive that assessment?",
+  "What is the full legal name of SAS, the company that holds the Special Purpose Accounts? What does SAS stand for? Do they have a website or public presence we can review? We'd like to do some independent research on them.",
+  "Your responses describe a process where GrowthLock receives incoming proceeds from active positions and then reports those to SAS, after which SAS ACHs the investor's share into the SPA. What is the typical delay between GrowthLock receiving those proceeds and the funds landing in the investor's account? Why does the delay exist, and where does the investor's share sit during that gap?",
+  "Is the investor portal live and accessible today — meaning if we committed capital next week, would we have a login and be able to see positions from day one? If not, what does interim reporting look like until it's ready?",
+  "Can you put together a spreadsheet on the 20 syndication-approved deals? For each deal: origination date, payoff date, advance amount, factor rate, cycle duration, whether payoff was a renewal or full-term repayment, and what the modeled investor return would have been. For the 5 multi-cycle deals, include the subsequent positions too. This is 20 deals — it shouldn't take long to compile, and it would make the return model verifiable.",
+  "You mention the first three to four investors getting the most favorable terms you offer, but the specifics aren't defined. What exactly are the preferred terms — a different profit split, reduced fees, priority allocation, something else? How long do they last, and would they be written into the agreement?",
+  "You referenced a separate $50,000 equity or loan position to accelerate front-end operations. Is this structured as equity or a loan? What are the specific terms, what would the capital fund, and what does the return look like?",
+  "On the default you're navigating — the merchant had two active MCA positions simultaneously. Were both through GrowthLock, or was one through a different broker? More broadly, how does your underwriting evaluate a merchant who already has open MCA positions? Is stacking ever acceptable under your syndication criteria?",
+  "You describe funders recovering a 'meaningful portion' of outstanding advances through UCC enforcement, but we need actual numbers. When a merchant fully defaults on an MCA, what percentage of defaults result in any recovery? And on the ones where recovery happens, what percentage of the original principal typically comes back? Your funders should have this data."
+];
+
+function render() {
+  const container = document.getElementById('questionnaire');
+  let html = '';
+  questions.forEach((q, i) => {
+    const key = `fq_${i}`;
+    const saved = localStorage.getItem(key) || '';
+    html += `<div class="question-card ${saved ? 'answered' : ''}" id="card_${key}">
+      <div class="question-label"><span class="q-num">${i + 1}.</span> ${q}</div>
+      <textarea id="${key}" placeholder="Type your response here..." oninput="handleInput('${key}')">${saved}</textarea>
+    </div>`;
+  });
+  container.innerHTML = html;
+  document.getElementById('totalCount').textContent = questions.length;
+  document.getElementById('responderName').value = localStorage.getItem('fq_responderName') || '';
+  updateProgress();
+}
+
+function handleInput(key) {
+  const val = document.getElementById(key).value;
+  localStorage.setItem(key, val);
+  document.getElementById('card_' + key).classList.toggle('answered', !!val.trim());
+  updateProgress();
+}
+
+function updateProgress() {
+  let answered = 0;
+  questions.forEach((q, i) => {
+    if ((document.getElementById(`fq_${i}`)?.value || '').trim()) answered++;
+  });
+  document.getElementById('answeredCount').textContent = answered;
+  document.getElementById('progressBar').style.width = (questions.length > 0 ? (answered / questions.length) * 100 : 0) + '%';
+}
+
+function saveDraft() {
+  questions.forEach((q, i) => {
+    const el = document.getElementById(`fq_${i}`);
+    if (el) localStorage.setItem(`fq_${i}`, el.value);
+  });
+  localStorage.setItem('fq_responderName', document.getElementById('responderName').value);
+  showToast('Draft saved to browser');
+}
+
+async function submitForm() {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  const now = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  document.getElementById('responderDate').value = now;
+  const payload = {
+    _subject: "SVRP Follow-Up Questions — GrowthLock Responses",
+    _gotcha: "",
+    respondent_name: document.getElementById('responderName').value || '(not provided)',
+    submitted_at: now
+  };
+  let answeredQ = 0;
+  questions.forEach((q, i) => {
+    const val = document.getElementById(`fq_${i}`).value.trim();
+    if (val) {
+      payload[`Q${i + 1}_FollowUp`] = val;
+      answeredQ++;
+    }
+  });
+  payload["_summary"] = answeredQ + " of " + questions.length + " questions answered";
+  try {
+    const resp = await fetch(FORMSPREE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (resp.ok) {
+      document.getElementById('successOverlay').classList.add('show');
+      questions.forEach((q, i) => { localStorage.removeItem(`fq_${i}`); });
+      localStorage.removeItem('fq_responderName');
+    } else {
+      const data = await resp.json();
+      showToast('Submission failed: ' + (data.error || 'Please try again'));
+      btn.disabled = false;
+      btn.textContent = 'Submit Responses';
+    }
+  } catch (err) {
+    showToast('Network error — please check your connection and try again');
+    btn.disabled = false;
+    btn.textContent = 'Submit Responses';
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+render();
+</script>
+</body>
+</html>
